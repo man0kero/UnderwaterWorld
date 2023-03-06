@@ -156,6 +156,10 @@ public class UnderwaterWorld extends Game {
 			batch.draw(background, 0, 0,
 					Gdx.graphics.getWidth(),
 					Gdx.graphics.getHeight());
+			controlAdd();
+			stoneRender();
+			bonusRender();
+			updateLife();
 
 			if (fallSide < 0) {
 				fallSide = 0;
@@ -167,7 +171,6 @@ public class UnderwaterWorld extends Game {
 			} else if (fallHeight + submarine[0].getHeight() > Gdx.graphics.getHeight()) {
 				fallHeight = Gdx.graphics.getHeight() - submarine[0].getHeight();
 			}
-
 			batch.draw(submarine[flag],
 						fallSide,
 						fallHeight);
@@ -192,15 +195,11 @@ public class UnderwaterWorld extends Game {
 					layout.width + 20,
 					Gdx.graphics.getHeight() - bonusLayout.height - 85);
 			//UI
-
 			gameScore += Gdx.graphics.getDeltaTime();
 			if(gameScore >= 100f) {
 				gameState = 3;
 			}
-			controlAdd();
-			stoneRender();
-			bonusRender();
-			updateLife();
+
 		} else if (gameState == 0) {
 			if (Gdx.input.justTouched()) {
 				batch.draw(splashT, 0, 0,
