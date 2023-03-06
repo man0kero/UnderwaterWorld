@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 
@@ -46,7 +45,7 @@ public class UnderwaterWorld extends Game {
 	Random random;
 
 	float gameScore = 0;
-	float rockSpeed;
+	float rockAndBonesSpeed = 200;
 	float fallSide;
 	float fallHeight;
 	float speed = 0;
@@ -105,6 +104,34 @@ public class UnderwaterWorld extends Game {
 		init();
 	}
 
+	@Override
+	public void render() {
+		batch.begin();
+
+		batch.draw(splashT, 0, 0,
+				Gdx.graphics.getWidth(),
+				Gdx.graphics.getHeight());
+
+		if (gameState == 1) {
+			startNewGame();
+		}
+		else if (gameState == 0) {
+			startWelcomeSplash();
+		}
+		else if (gameState == 2) {
+			startGameOverScreen();
+		}
+		else if (gameState == 3) {
+			startVictoryScreen();
+		}
+		batch.end();
+		buildShapes();
+	}
+
+	@Override
+	public void dispose () {
+	}
+
 	public void init() {
 		fallSide = Gdx.graphics.getWidth() / 2 - submarine[0].getWidth() / 2;
 		fallHeight = Gdx.graphics.getHeight() * 2 / 3 - submarine[flag].getHeight() / 2;
@@ -126,7 +153,6 @@ public class UnderwaterWorld extends Game {
 					rockTexture.getWidth(), rockTexture.getHeight());
 			stoneCircle[i] = new Circle();
 		}
-		rockSpeed = 200;
 
 		int bonusGap = submarine[0].getWidth() * 2;
 		int bonusMaxY = Gdx.graphics.getHeight() + bonusGap;
@@ -141,109 +167,101 @@ public class UnderwaterWorld extends Game {
 					bonusTexture.getWidth(), bonusTexture.getHeight());
 			bonusCircle[i] = new Circle();
 		}
-		rockSpeed = 200;
 	}
 
-	@Override
-	public void render() {
-		batch.begin();
+	public void startWelcomeSplash(){
+		if (Gdx.input.justTouched()) {
+			batch.draw(splashT, 0, 0,
+					Gdx.graphics.getWidth(),
+					Gdx.graphics.getHeight());
+			gameState = 1;
+		}
+	}
 
-		batch.draw(splashT, 0, 0,
+	public void startGameOverScreen(){
+		batch.draw(gameOverT, 0, 0,
 				Gdx.graphics.getWidth(),
 				Gdx.graphics.getHeight());
 
-		if (gameState == 1) {
-			batch.draw(background, 0, 0,
-					Gdx.graphics.getWidth(),
-					Gdx.graphics.getHeight());
-			controlAdd();
-			stoneRender();
-			bonusRender();
-			updateLife();
-
-			if (fallSide < 0) {
-				fallSide = 0;
-			} else if (fallSide + submarine[0].getWidth() > Gdx.graphics.getWidth()) {
-				fallSide = Gdx.graphics.getWidth() - submarine[0].getWidth();
+		if (Gdx.input.justTouched()) {
+			for (int i = 0; i < rocks.length; i++) {
+				isCollidedWithStone[i] = false;
 			}
-			if (fallHeight < 0) {
-				fallHeight = 0;
-			} else if (fallHeight + submarine[0].getHeight() > Gdx.graphics.getHeight()) {
-				fallHeight = Gdx.graphics.getHeight() - submarine[0].getHeight();
-			}
-			batch.draw(submarine[flag],
-						fallSide,
-						fallHeight);
-			//UI
-			scoreText.draw(batch,
-					"Score:",
-					25,
-					Gdx.graphics.getHeight() - 25);
-
-			scoreFont.draw(batch,
-					String.valueOf((int) Math.round(gameScore)),
-					layout.width + 10,
-					Gdx.graphics.getHeight() - 35);
-
-			bonusText.draw(batch,
-					"Bonus:",
-					25,
-					Gdx.graphics.getHeight() - bonusLayout.height - 80);
-
-			bonusFont.draw(batch,
-					String.valueOf((int) Math.round(bonusScore)),
-					layout.width + 20,
-					Gdx.graphics.getHeight() - bonusLayout.height - 85);
-			//UI
-			gameScore += Gdx.graphics.getDeltaTime();
-			if(gameScore >= 100f) {
-				gameState = 3;
-			}
-
-		} else if (gameState == 0) {
-			if (Gdx.input.justTouched()) {
-				batch.draw(splashT, 0, 0,
-						Gdx.graphics.getWidth(),
-						Gdx.graphics.getHeight());
-				gameState = 1;
-			}
-		} else if (gameState == 2) {
-			batch.draw(gameOverT, 0, 0,
-					Gdx.graphics.getWidth(),
-					Gdx.graphics.getHeight());
-
-			if (Gdx.input.justTouched()) {
-				for (int i = 0; i < rocks.length; i++) {
-					isCollidedWithStone[i] = false;
-				}
-				init();
-				gameState = 1;
-				lifes = 3;
-				gameScore = 0;
-				bonusScore = 0;
-			}
-		} else if (gameState == 3) {
-			batch.draw(victoryT, 0, 0,
-					Gdx.graphics.getWidth(),
-					Gdx.graphics.getHeight());
-
-			if (Gdx.input.justTouched()) {
-				for (int i = 0; i < rocks.length; i++) {
-					isCollidedWithStone[i] = false;
-				}
-				init();
-				gameState = 1;
-				lifes = 3;
-				gameScore = 0;
-				bonusScore = 0;
-			}
+			init();
+			gameState = 1;
+			lifes = 3;
+			gameScore = 0;
+			bonusScore = 0;
 		}
-		batch.end();
-		buildShapes();
 	}
 
-	@Override
-	public void dispose () {
+	public void startVictoryScreen(){
+		batch.draw(victoryT, 0, 0,
+				Gdx.graphics.getWidth(),
+				Gdx.graphics.getHeight());
+
+		if (Gdx.input.justTouched()) {
+			for (int i = 0; i < rocks.length; i++) {
+				isCollidedWithStone[i] = false;
+			}
+			init();
+			gameState = 1;
+			lifes = 3;
+			gameScore = 0;
+			bonusScore = 0;
+		}
+	}
+
+	public void startNewGame() {
+
+		batch.draw(background, 0, 0,
+				Gdx.graphics.getWidth(),
+				Gdx.graphics.getHeight());
+		controlAdd();
+		stoneRender();
+		bonusRender();
+		updateLife();
+
+		if (fallSide < 0) {
+			fallSide = 0;
+		} else if (fallSide + submarine[0].getWidth() > Gdx.graphics.getWidth()) {
+			fallSide = Gdx.graphics.getWidth() - submarine[0].getWidth();
+		}
+		if (fallHeight < 0) {
+			fallHeight = 0;
+		} else if (fallHeight + submarine[0].getHeight() > Gdx.graphics.getHeight()) {
+			fallHeight = Gdx.graphics.getHeight() - submarine[0].getHeight();
+		}
+
+		batch.draw(submarine[flag],
+				fallSide,
+				fallHeight);
+		//UI
+		scoreText.draw(batch,
+				"Score:",
+				25,
+				Gdx.graphics.getHeight() - 25);
+
+		scoreFont.draw(batch,
+				String.valueOf((int) Math.round(gameScore)),
+				layout.width + 10,
+				Gdx.graphics.getHeight() - 35);
+
+		bonusText.draw(batch,
+				"Bonus:",
+				25,
+				Gdx.graphics.getHeight() - bonusLayout.height - 80);
+
+		bonusFont.draw(batch,
+				String.valueOf((int) Math.round(bonusScore)),
+				layout.width + 20,
+				Gdx.graphics.getHeight() - bonusLayout.height - 85);
+		//UI
+		gameScore += Gdx.graphics.getDeltaTime();
+		if(gameScore >= 100f) {
+			gameState = 3;
+		}
+
 	}
 
 	public void buildShapes() {
@@ -312,7 +330,7 @@ public class UnderwaterWorld extends Game {
 
 	public void stoneRender() {
 		for (Sprite rock : rocks) {
-			rock.translateY(rockSpeed * Gdx.graphics.getDeltaTime());
+			rock.translateY(rockAndBonesSpeed * Gdx.graphics.getDeltaTime());
 			rock.draw(batch);
 			if (rock.getY() > Gdx.graphics.getHeight()) {
 				rock.setPosition(random.nextInt(Gdx.graphics.getWidth() - (int) rock.getWidth()),
@@ -323,7 +341,7 @@ public class UnderwaterWorld extends Game {
 
 	public void bonusRender() {
 		for (Sprite bonus : bonuses) {
-			bonus.translateY(rockSpeed * Gdx.graphics.getDeltaTime());
+			bonus.translateY(rockAndBonesSpeed * Gdx.graphics.getDeltaTime());
 			bonus.draw(batch);
 			if (bonus.getY() > Gdx.graphics.getHeight()) {
 				bonus.setPosition(random.nextInt(Gdx.graphics.getWidth() - (int) bonus.getWidth()),
