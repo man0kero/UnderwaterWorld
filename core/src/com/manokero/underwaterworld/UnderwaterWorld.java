@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 
@@ -107,7 +108,6 @@ public class UnderwaterWorld extends Game {
 	@Override
 	public void render() {
 		batch.begin();
-
 		batch.draw(splashT, 0, 0,
 				Gdx.graphics.getWidth(),
 				Gdx.graphics.getHeight());
@@ -213,7 +213,6 @@ public class UnderwaterWorld extends Game {
 	}
 
 	public void startNewGame() {
-
 		batch.draw(background, 0, 0,
 				Gdx.graphics.getWidth(),
 				Gdx.graphics.getHeight());
@@ -232,7 +231,6 @@ public class UnderwaterWorld extends Game {
 		} else if (fallHeight + submarine[0].getHeight() > Gdx.graphics.getHeight()) {
 			fallHeight = Gdx.graphics.getHeight() - submarine[0].getHeight();
 		}
-
 		batch.draw(submarine[flag],
 				fallSide,
 				fallHeight);
@@ -261,7 +259,6 @@ public class UnderwaterWorld extends Game {
 		if(gameScore >= 100f) {
 			gameState = 3;
 		}
-
 	}
 
 	public void buildShapes() {
@@ -273,16 +270,16 @@ public class UnderwaterWorld extends Game {
 			submarineCircle.set(fallSide + submarine[flag].getWidth()/2,
 					Gdx.graphics.getHeight() * 2 / 3,
 					submarine[flag].getWidth()/2.5f);
-//			shapeRenderer.setColor(Color.WHITE);
-//			shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-//			shapeRenderer.circle(stoneCircle[i].x+5,
-//					stoneCircle[i].y+7, (float) (stoneCircle[i].radius));
-//			shapeRenderer.end();
+			/*shapeRenderer.setColor(Color.WHITE);
+			shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+			shapeRenderer.circle(stoneCircle[i].x+5,
+					stoneCircle[i].y+7, (float) (stoneCircle[i].radius));
+			shapeRenderer.end();
 
-//			shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-//			shapeRenderer.setColor(Color.WHITE);
-//			shapeRenderer.circle(submarineCircle.x, submarineCircle.y, submarineCircle.radius);
-//			shapeRenderer.end();
+			shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+			shapeRenderer.setColor(Color.WHITE);
+			shapeRenderer.circle(submarineCircle.x, submarineCircle.y, submarineCircle.radius);
+			shapeRenderer.end();*/
 			for (int x = 0; x < rocks.length; x++) {
 				if (!isCollidedWithStone[x] && Intersector.overlaps(submarineCircle, stoneCircle[x])) {
 					lifes--;
@@ -297,10 +294,10 @@ public class UnderwaterWorld extends Game {
 			bonusCircle[i] = new Circle(bonuses[i].getX() + bonuses[i].getWidth() / 2,
 					bonuses[i].getY() + bonuses[i].getHeight() / 2,
 					bonuses[i].getWidth() / 2);
-//			shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-//			shapeRenderer.circle(bonusCircle[i].x+5,
-//					bonusCircle[i].y, (float) (bonusCircle[i].radius));
-//			shapeRenderer.end();
+			/*shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+			shapeRenderer.circle(bonusCircle[i].x+5,
+					bonusCircle[i].y, (float) (bonusCircle[i].radius));
+			shapeRenderer.end();*/
 
 			for (int x = 0; x < bonusCircle.length; x++) {
 				if (!isCollidedWithBonus[x] && Intersector.overlaps(submarineCircle, bonusCircle[x])) {
@@ -312,8 +309,6 @@ public class UnderwaterWorld extends Game {
 				}
 			}
 		}
-
-
 	}
 
 	public void controlAdd() {
