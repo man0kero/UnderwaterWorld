@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 
@@ -47,8 +46,8 @@ public class UnderwaterWorld extends Game {
 
 	float gameScore = 0;
 	float rockAndBonesSpeed = 200;
-	float fallSide;
-	float fallHeight;
+	float submarineX;
+	float submarineY;
 	float speed = 0;
 	int flag = 0;
 	int stoneNumber = 100;
@@ -80,6 +79,9 @@ public class UnderwaterWorld extends Game {
 		splashT = new Texture("underwaterworld.png");
 		victoryT = new Texture("victory.png");
 
+		submarineX = Gdx.graphics.getWidth() / 2 - submarine[0].getWidth() / 2;
+		submarineY = Gdx.graphics.getHeight() * 2 / 3 - submarine[flag].getHeight() / 2;
+
 		bonusFont = new BitmapFont();
 		bonusFont.setColor(Color.WHITE);
 		bonusFont.getData().setScale(8);
@@ -101,6 +103,7 @@ public class UnderwaterWorld extends Game {
 		submarineCircle = new Circle();
 		stoneCircle = new Circle[stoneNumber];
 		bonusCircle = new Circle[bonusNumber];
+
 
 		init();
 	}
@@ -125,7 +128,6 @@ public class UnderwaterWorld extends Game {
 			startVictoryScreen();
 		}
 		batch.end();
-		buildShapes();
 	}
 
 	@Override
@@ -133,9 +135,6 @@ public class UnderwaterWorld extends Game {
 	}
 
 	public void init() {
-		fallSide = Gdx.graphics.getWidth() / 2 - submarine[0].getWidth() / 2;
-		fallHeight = Gdx.graphics.getHeight() * 2 / 3 - submarine[flag].getHeight() / 2;
-
 		bonuses = new Sprite[bonusNumber];
 		rocks = new Sprite[stoneNumber];
 		random = new Random();
@@ -221,19 +220,19 @@ public class UnderwaterWorld extends Game {
 		bonusRender();
 		updateLife();
 
-		if (fallSide < 0) {
-			fallSide = 0;
-		} else if (fallSide + submarine[0].getWidth() > Gdx.graphics.getWidth()) {
-			fallSide = Gdx.graphics.getWidth() - submarine[0].getWidth();
+		if (submarineX < 0) {
+			submarineX = 0;
+		} else if (submarineX + submarine[0].getWidth() > Gdx.graphics.getWidth()) {
+			submarineX = Gdx.graphics.getWidth() - submarine[0].getWidth();
 		}
-		if (fallHeight < 0) {
-			fallHeight = 0;
-		} else if (fallHeight + submarine[0].getHeight() > Gdx.graphics.getHeight()) {
-			fallHeight = Gdx.graphics.getHeight() - submarine[0].getHeight();
+		if (submarineY < 0) {
+			submarineY = 0;
+		} else if (submarineY + submarine[0].getHeight() > Gdx.graphics.getHeight()) {
+			submarineY = Gdx.graphics.getHeight() - submarine[0].getHeight();
 		}
 		batch.draw(submarine[flag],
-				fallSide,
-				fallHeight);
+				submarineX,
+				submarineY);
 		//UI
 		scoreText.draw(batch,
 				"Score:",
@@ -261,13 +260,34 @@ public class UnderwaterWorld extends Game {
 		}
 	}
 
-	public void buildShapes() {
+
+	public void controlAdd() {
+		flag = inputAdapter.getFlag();
+		if(inputAdapter.isTouchedLeft()){
+			speed = -15;
+		}
+		if(inputAdapter.isTouchedRight()){
+			speed = +15;
+		}
+		submarineX += speed;
+		speed *= 0.9f;
+	}
+
+	public void stoneRender() {
+		for (Sprite rock : rocks) {
+			rock.translateY(rockAndBonesSpeed * Gdx.graphics.getDeltaTime());
+			rock.draw(batch);
+			if (rock.getY() > Gdx.graphics.getHeight()) {
+				rock.setPosition(random.nextInt(Gdx.graphics.getWidth() - (int) rock.getWidth()),
+						rock.getY() - rocks.length * submarine[0].getWidth() * 2);
+			}
+		}
 		for (int i = 0; i < rocks.length; i++) {
 			stoneCircle[i] = new Circle(rocks[i].getX() + rocks[i].getWidth() / 2,
 					rocks[i].getY() + rocks[i].getHeight() / 2,
 					rocks[i].getWidth() / 3.5f);
 
-			submarineCircle.set(fallSide + submarine[flag].getWidth()/2,
+			submarineCircle.set(submarineX + submarine[flag].getWidth()/2,
 					Gdx.graphics.getHeight() * 2 / 3,
 					submarine[flag].getWidth()/2.5f);
 			/*shapeRenderer.setColor(Color.WHITE);
@@ -290,6 +310,17 @@ public class UnderwaterWorld extends Game {
 				}
 			}
 		}
+	}
+
+	public void bonusRender() {
+		for (Sprite bonus : bonuses) {
+			bonus.translateY(rockAndBonesSpeed * Gdx.graphics.getDeltaTime());
+			bonus.draw(batch);
+			if (bonus.getY() > Gdx.graphics.getHeight()) {
+				bonus.setPosition(random.nextInt(Gdx.graphics.getWidth() - (int) bonus.getWidth()),
+						bonus.getY() - bonuses.length * rocks[0].getWidth() * 10);
+			}
+		}
 		for (int i = 0; i < bonuses.length; i++) {
 			bonusCircle[i] = new Circle(bonuses[i].getX() + bonuses[i].getWidth() / 2,
 					bonuses[i].getY() + bonuses[i].getHeight() / 2,
@@ -307,40 +338,6 @@ public class UnderwaterWorld extends Game {
 				} else if (isCollidedWithBonus[x] && Intersector.overlaps(submarineCircle, bonusCircle[x])) {
 					bonuses[x].setAlpha(0f);
 				}
-			}
-		}
-	}
-
-	public void controlAdd() {
-		flag = inputAdapter.getFlag();
-		if(inputAdapter.isTouchedLeft()){
-			speed = -15;
-		}
-		if(inputAdapter.isTouchedRight()){
-			speed = +15;
-		}
-		fallSide += speed;
-		speed *= 0.9f;
-	}
-
-	public void stoneRender() {
-		for (Sprite rock : rocks) {
-			rock.translateY(rockAndBonesSpeed * Gdx.graphics.getDeltaTime());
-			rock.draw(batch);
-			if (rock.getY() > Gdx.graphics.getHeight()) {
-				rock.setPosition(random.nextInt(Gdx.graphics.getWidth() - (int) rock.getWidth()),
-						rock.getY() - rocks.length * submarine[0].getWidth() * 2);
-			}
-		}
-	}
-
-	public void bonusRender() {
-		for (Sprite bonus : bonuses) {
-			bonus.translateY(rockAndBonesSpeed * Gdx.graphics.getDeltaTime());
-			bonus.draw(batch);
-			if (bonus.getY() > Gdx.graphics.getHeight()) {
-				bonus.setPosition(random.nextInt(Gdx.graphics.getWidth() - (int) bonus.getWidth()),
-						bonus.getY() - bonuses.length * rocks[0].getWidth() * 10);
 			}
 		}
 	}
